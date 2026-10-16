@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tewaskan Pulu-Pulu | Misi Lanun</title>
+<style>
+:root{--gold:#ffd447;--orange:#ff7b22;--navy:#082344;--pink:#ff4e9b;--mint:#53f4c1}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:#071d35;color:white}
+button{font:inherit;cursor:pointer;border:0}
+#game{position:fixed;inset:0;overflow:hidden;background:linear-gradient(#1376a3,#45c9db 52%,#e6b54e)}
+#camera{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1);opacity:.78;filter:saturate(1.12) contrast(1.03)}
+#cameraShade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(2,24,50,.78),rgba(5,38,62,.18) 42%,rgba(4,20,38,.55));pointer-events:none}
+#island{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.sun{position:absolute;right:8%;top:13%;width:clamp(50px,9vw,110px);aspect-ratio:1;border-radius:50%;background:#ffe990;box-shadow:0 0 55px #ffd86b}
+.cloud{position:absolute;font-size:clamp(30px,6vw,70px);opacity:.55;filter:drop-shadow(0 3px 2px #163a56)}
+.cloud.c1{top:12%;left:7%}.cloud.c2{top:21%;right:22%}
+.sea{position:absolute;left:0;right:0;bottom:0;height:28%;background:linear-gradient(#24c6dc99,#0877a5dd);border-top:4px solid #b5f7ee88}
+.wave{position:absolute;left:-5%;width:110%;height:32px;border-top:5px solid #b9fff4aa;border-radius:50%;animation:wave 5s ease-in-out infinite alternate}
+.wave.w1{top:12%}.wave.w2{top:40%;animation-delay:-2s}
+@keyframes wave{to{transform:translateX(5%) translateY(9px)}}
+.palm{position:absolute;bottom:20%;font-size:clamp(55px,10vw,125px);filter:drop-shadow(0 7px 2px #173b2a)}
+.palm.p1{left:-1%;transform:rotate(-8deg)}.palm.p2{right:-1%;transform:scaleX(-1) rotate(-8deg)}
+#hud{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;pointer-events:none;padding: max(10px,env(safe-area-inset-top)) 14px 12px}
+.brand{font-size:clamp(18px,3.2vw,36px);font-weight:1000;letter-spacing:1px;text-shadow:0 4px 0 #7a2c15,0 7px 14px #001b32;text-align:center;color:#fff3a3;line-height:1.05}
+.brand span{color:#ff5c6d}
+#topbar{width:min(100%,900px);display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:7px}
+.pill{background:#082344d9;border:2px solid #ffdb62;border-radius:999px;padding:7px 12px;font-weight:850;font-size:clamp(12px,2vw,17px);box-shadow:0 3px 0 #6e351d}
+#questionBox{width:min(94%,850px);margin-top:12px;padding:clamp(10px,2vw,18px);text-align:center;background:linear-gradient(135deg,#fff8dcf5,#fff0b8f5);color:#122d49;border:4px solid #ffbd35;border-radius:22px;box-shadow:0 7px 0 #a34e1e,0 10px 20px #001b3870;pointer-events:auto}
+#qCount{font-size:clamp(11px,1.7vw,15px);font-weight:950;color:#b64a20;text-transform:uppercase;letter-spacing:1px}
+#question{font-weight:950;font-size:clamp(17px,3.1vw,30px);line-height:1.2;margin-top:4px}
+#instruction{font-size:clamp(11px,1.8vw,15px);font-weight:750;margin-top:7px;color:#26445d}
+#arena{position:absolute;inset:0;display:flex;align-items:center;justify-content:space-around;padding:0 2.5%;pointer-events:none}
+.Pulu-Pulu{position:absolute;top:53%;transform:translateY(-35%);width:clamp(130px,24vw,260px);display:flex;flex-direction:column;align-items:center;gap:8px;transition:transform .18s,filter .18s;pointer-events:none}
+.Pulu-Pulu.left{left:3%}.Pulu-Pulu.right{right:3%}
+.Pulu-Pulu .islandBase{position:absolute;bottom:-17px;width:120%;height:37px;border-radius:50%;background:radial-gradient(ellipse,#f5cb62,#9a5a24 68%,transparent 72%);z-index:-1}
+.Pulu-PuluFace{font-size:clamp(82px,15vw,158px);line-height:1;filter:drop-shadow(0 0 10px #ff263d) drop-shadow(0 8px 2px #06263a);animation:bob 1.7s ease-in-out infinite alternate;position:relative;text-shadow:0 0 20px #ff263d}
+@keyframes bob{to{transform:translateY(-9px) rotate(3deg)}}
+.Pulu-Pulu .answer{background:linear-gradient(145deg,#fff6d7,#ffd7b3);color:#102d49;border:4px solid #ffcf45;border-radius:16px;padding:8px 18px;min-width:100px;text-align:center;font-weight:1000;font-size:clamp(17px,3vw,28px);box-shadow:0 5px 0 #a94c1c,0 8px 12px #00152b88;max-width:44vw}
+.Pulu-Pulu .tag{font-size:clamp(10px,1.7vw,14px);font-weight:950;letter-spacing:1px;background:#073250dc;border-radius:99px;padding:4px 10px;border:1px solid #a7f5ff}
+.Pulu-Pulu.hit{filter:grayscale(1) brightness(.8);transform:translateY(-35%) scale(.82) rotate(10deg)}
+.Pulu-Pulu:not(.hit) .Pulu-PuluFace{filter:drop-shadow(0 0 13px #ff263d) drop-shadow(0 8px 2px #06263a)}
+.Pulu-Pulu .tag{background:linear-gradient(90deg,#4b0715,#a20d2d);border-color:#ff9b6a;color:#fff1c2;text-shadow:0 1px 3px #000}
+.Pulu-Pulu.hit .Pulu-PuluFace{animation:none}
+.Pulu-Pulu.hit .Pulu-PuluFace.knockedOut{transform:rotate(90deg) scale(.9);filter:grayscale(1) brightness(.75)}
+.Pulu-Pulu.wrong{animation:shake .38s}
+@keyframes shake{0%,100%{translate:0}20%{translate:-12px}40%{translate:12px}60%{translate:-8px}80%{translate:8px}}
+#status{position:absolute;top:43%;left:50%;transform:translate(-50%,-50%);width:90%;text-align:center;font-weight:1000;font-size:clamp(22px,5vw,54px);line-height:1.1;text-shadow:0 4px 0 #74251b,0 6px 15px #00152b;z-index:8;opacity:0;pointer-events:none}
+#status.show{animation:pop .9s ease both}
+#status.good{color:#baff76}#status.bad{color:#ff7b88}
+@keyframes pop{0%{opacity:0;scale:.5}15%,75%{opacity:1;scale:1}100%{opacity:0;scale:1.05}}
+#bottomBar{position:absolute;bottom:max(12px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:8px;pointer-events:auto;width:min(96%,760px);justify-content:center;flex-wrap:wrap}
+.action{background:linear-gradient(#ffdc55,#ff9d24);color:#3a1c08;border:3px solid #fff0a0;border-radius:14px;padding:10px 15px;font-weight:1000;box-shadow:0 5px 0 #873c19;font-size:clamp(12px,2vw,16px)}
+.action:active{transform:translateY(3px);box-shadow:0 2px 0 #873c19}
+.action.secondary{background:linear-gradient(#e7fbff,#9eeaff);color:#073250;border-color:white}
+#camHint{position:absolute;bottom:85px;left:50%;transform:translateX(-50%);background:#06223bd9;border:1px solid #a6efff;border-radius:12px;padding:7px 12px;font-size:12px;font-weight:750;text-align:center;max-width:90%;pointer-events:none}
+#startScreen,#endScreen{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:20px;background:linear-gradient(135deg,#061c38eF,#073d55e8);z-index:20}
+.panel{width:min(92%,600px);max-height:92%;overflow:auto;text-align:center;padding:clamp(20px,4vw,34px);border:4px solid #ffcf45;border-radius:28px;background:linear-gradient(145deg,#fff6cf,#ffcf68);color:#12304a;box-shadow:0 12px 0 #8c3e1a,0 20px 60px #0008}
+.panel h1{font-size:clamp(28px,6vw,48px);line-height:1;margin:0 0 12px;color:#bd351d;text-shadow:0 2px #ffef99}
+.panel p{font-weight:750;line-height:1.45}
+.bigEmoji{font-size:clamp(65px,14vw,100px);margin:5px}
+#startScreen .action,#endScreen .action{font-size:18px;padding:13px 24px;margin-top:8px}
+.small{font-size:12px!important;color:#3e5669}
+.hidden{display:none!important}
+#confetti{position:absolute;inset:0;pointer-events:none;z-index:25;overflow:hidden}
+.confettiPiece{position:absolute;top:-20px;width:10px;height:18px;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(900deg)}}
+#scoreBig{font-size:clamp(35px,8vw,64px);font-weight:1000;color:#a42e19}
+#secret{font-size:clamp(18px,3.8vw,27px);font-weight:1000;background:#0c3855;color:#fff4a4;padding:12px;border-radius:15px;margin:12px 0;border:3px dashed #ffda4d}
+#gestureBadge{position:absolute;top:12px;right:12px;font-size:12px;font-weight:900;background:#06223beF;padding:7px 10px;border-radius:10px;border:2px solid #9cf5ff;z-index:12;box-shadow:0 3px 10px #00152b88}
+@media(max-width:600px){.Pulu-Pulu{top:59%;width:43vw}.Pulu-Pulu.left{left:1%}.Pulu-Pulu.right{right:1%}.Pulu-PuluFace{font-size:clamp(74px,22vw,125px)}.Pulu-Pulu .answer{padding:7px 8px;min-width:90px}.brand{max-width:95%}#questionBox{margin-top:9px}#camHint{bottom:93px}#bottomBar{bottom:max(10px,env(safe-area-inset-bottom))}}
+</style>
+</head>
+<body>
+<div id="game">
+  <video id="camera" autoplay muted playsinline></video>
+  <div id="cameraShade"></div>
+  <div id="island"><div class="sun"></div><div class="cloud c1">☁️</div><div class="cloud c2">☁️</div><div class="sea"><div class="wave w1"></div><div class="wave w2"></div></div><div class="palm p1">🌴</div><div class="palm p2">🌴</div></div>
+  <div id="gestureBadge">✊ Tumbuk untuk menyerang</div>
+  <div id="hud">
+    <div class="brand">🏴‍☠️ TEWASKAN <span>PULU-PULU</span> 🏴‍☠️</div>
+    <div id="topbar"><div class="pill" id="score">⭐ Skor: 0</div><div class="pill" id="progress">Misi 1 / 5</div><div class="pill" id="lives">❤️ ❤️ ❤️ ❤️ ❤️</div></div>
+    <div id="questionBox"><div id="qCount">SOALAN 1 DARIPADA 5</div><div id="question">Bersedia, anak kapal!</div><div id="instruction">Kepalkan tangan dan tumbuk ke arah Pulu-Pulu yang membawa jawapan betul!</div></div>
+  </div>
+  <div id="arena">
+    <div class="Pulu-Pulu left" id="Pulu-PuluLeft"><div class="tag">PULU-PULU A</div><div class="Pulu-PuluFace">👹</div><div class="answer" id="answerLeft">Pilihan A</div><div class="islandBase"></div></div>
+    <div class="Pulu-Pulu right" id="Pulu-PuluRight"><div class="tag">PULU-PULU B</div><div class="Pulu-PuluFace">👺</div><div class="answer" id="answerRight">Pilihan B</div><div class="islandBase"></div></div>
+  </div>
+  <div id="status"></div>
+  <div id="camHint">Benarkan akses kamera. Kepalkan tangan ke arah Pulu-Pulu untuk menyerang; buka tangan semula sebelum tumbukan seterusnya.</div>
+  <div id="bottomBar"><button class="action secondary" id="cameraBtn">📷 Hidupkan Kamera</button><button class="action" id="startBtn">⚓ MULA MISI</button><button class="action secondary" id="soundBtn">🔊 Bunyi: ON</button></div>
+  <div id="startScreen">
+    <div class="panel">
+      <div class="bigEmoji">🏴‍☠️🏝️👹👺</div>
+      <h1>CABARAN<br>TEWASKAN PULU-PULU!</h1>
+      <p>UNTUK MENJAWAB SOALAN DAN MENEWASKAN PULU-PULU, KEPALKAN TANGAN DAN TUMBUK KE ARAH PULU-PULU YANG MEMEGANG JAWAPAN YANG BETUL!</p>
+      <button class="action" id="begin">⚔️ MULAKAN PERTARUNGAN</button>
+    </div>
+  </div>
+  <div id="endScreen" class="hidden"><div class="panel"><div class="bigEmoji">🏴‍☠️🎉🏝️</div><h1>SYABAS ANAK KAPAL!</h1><p>Anda berjaya menewaskan Pulu-Pulu!</p><div id="scoreBig">5 / 5</div><div id="secret">INI NOMBOR RAHSIA ANDA: 5</div><p>🏆 Semua jawapan tepat! Pulau ilmu kini selamat!</p><button class="action" id="replay">🔁 Main Semula</button></div></div>
+  <div id="confetti"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+<script>
+(() => {
+const questions = [
+ {q:'Azman tidak ke sekolah pada hari ini kerana ______ demam panas.',a:'dia',b:'kamu',correct:0},
+ {q:'“______ akan belajar dengan bersungguh-sungguh,” kata murid-murid Tahun Tiga Perdana kepada Cikgu Farhana.',a:'Kami',b:'Kita',correct:0},
+ {q:'Guru besar sedang berucap. ______ menasihati murid-murid supaya tidak melanggar peraturan sekolah.',a:'Dia',b:'Beliau',correct:1},
+ {q:'Murid-murid itu sedang giat berlatih kerana ______ akan menyertai perlawanan hoki pada minggu hadapan.',a:'dia',b:'mereka',correct:1},
+ {q:'“Jumpa ______ di bilik guru,” kata Cikgu Mimie kepada Khairy Razin.',a:'aku',b:'saya',correct:1}
+];
+const $ = id => document.getElementById(id);
+const video=$('camera'), left=$('Pulu-PuluLeft'), right=$('Pulu-PuluRight');
+let index=0,score=0,started=false,locked=false, cameraReady=false, soundOn=true, hands=null, cam=null;
+let lastFist=false, handMustOpen=false, fistFrames=0, openFrames=0, lastPunchAt=0, audioCtx=null, musicTimer=null;
+function audio(){if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)();if(audioCtx.state==='suspended')audioCtx.resume();return audioCtx}
+function tone(freq=440,duration=.12,type='sine',volume=.08,when=0){if(!soundOn)return;try{const c=audio(),o=c.createOscillator(),g=c.createGain();o.type=type;o.frequency.setValueAtTime(freq,c.currentTime+when);g.gain.setValueAtTime(volume,c.currentTime+when);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+when+duration);o.connect(g);g.connect(c.destination);o.start(c.currentTime+when);o.stop(c.currentTime+when+duration)}catch(e){}}
+function fanfare(){[523,659,784,1047,784,1047].forEach((f,i)=>tone(f,.25,'triangle',.11,i*.13));setTimeout(()=>{for(let i=0;i<8;i++)tone(500+Math.random()*700,.28,'sawtooth',.025,i*.055)},550)}
+function buzzer(){tone(155,.38,'sawtooth',.12);tone(110,.42,'square',.07,.08)}
+function render(){
+ const q=questions[index];$('qCount').textContent=`SOALAN ${index+1} DARIPADA ${questions.length}`;
+ $('question').textContent=q.q;$('answerLeft').textContent=q.a;$('answerRight').textContent=q.b;
+ $('progress').textContent=`Misi ${index+1} / ${questions.length}`;$('score').textContent=`⭐ Skor: ${score}`;
+ $('lives').textContent='❤️ '.repeat(Math.max(0,questions.length-index)).trim()||'⚓';
+ left.classList.remove('hit','wrong');right.classList.remove('hit','wrong');left.querySelector('.Pulu-PuluFace').classList.remove('knockedOut');right.querySelector('.Pulu-PuluFace').classList.remove('knockedOut');lastFist=false;handMustOpen=false;fistFrames=0;openFrames=0;
+}
+function showStatus(text,good){const s=$('status');s.className='';s.textContent=text;s.classList.add(good?'good':'bad');void s.offsetWidth;s.classList.add('show')}
+function choose(side){
+ if(!started||locked)return;
+ locked=true;const q=questions[index],correctSide=q.correct===0?'left':'right',target=side==='left'?left:right;
+ if(side===correctSide){
+  score++;target.classList.add('hit');target.querySelector('.Pulu-PuluFace').classList.add('knockedOut');showStatus('TAHNIAH! JAWAPAN TEPAT! 🎉',true);fanfare();$('score').textContent=`⭐ Skor: ${score}`;
+  $('camHint').textContent='💥 Tepat sekali! Pulu-Pulu pengsan!';
+  setTimeout(()=>{index++;if(index>=questions.length){finish()}else{render();$('camHint').textContent='Kepalkan tangan ke arah Pulu-Pulu yang memegang jawapan betul! Buka tangan semula untuk serangan seterusnya.';locked=false}},1550);
+ }else{
+  target.classList.add('wrong');showStatus('SALAH! AYUH CUBA LAGI! ⚡',false);buzzer();
+  $('camHint').textContent='Cuba lagi, anak kapal! Tumbuk Pulu-Pulu yang membawa jawapan betul.';
+  setTimeout(()=>{target.classList.remove('wrong');$('camHint').textContent='Cuba lagi! Tumbuk Pulu-Pulu yang membawa jawapan betul.';locked=false},850);
+ }
+}
+function finish(){
+ started=false;$('bottomBar').classList.add('hidden');$('endScreen').classList.remove('hidden');$('scoreBig').textContent=`${score} / ${questions.length}`;$('camHint').textContent='Misi selesai! Syabas, anak kapal!';celebrate();fanfare();
+}
+function celebrate(){
+ const box=$('confetti');box.innerHTML='';const colors=['#ff4e9b','#ffd447','#53f4c1','#69d7ff','#ff773d','#fff'];
+ for(let i=0;i<150;i++){const p=document.createElement('i');p.className='confettiPiece';p.style.left=Math.random()*100+'%';p.style.background=colors[i%colors.length];p.style.animationDuration=(2+Math.random()*3)+'s';p.style.animationDelay=(Math.random()*1.8)+'s';p.style.transform=`rotate(${Math.random()*360}deg)`;box.appendChild(p)}
+}
+async function startCamera(){
+ try{
+  if(!navigator.mediaDevices?.getUserMedia)throw new Error('Pelayar ini tidak menyokong kamera. Cuba Chrome atau Edge melalui HTTPS.');
+  const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:1280},height:{ideal:720}},audio:false});
+  video.srcObject=stream;await video.play();cameraReady=true;$('cameraBtn').textContent='📷 Kamera Aktif';$('camHint').textContent='Kamera aktif! Pastikan tangan jelas dalam kamera. Kepalkan tangan ke arah Pulu-Pulu; buka tapak tangan semula selepas setiap tumbukan.';$('gestureBadge').textContent='✋ Menunggu tangan';
+  if(!window.Hands||!window.Camera){$('camHint').textContent='Kamera aktif tetapi pengesan tangan tidak dimuatkan. Semak Internet dan buka semula fail melalui HTTPS/localhost.';return}
+  hands=new Hands({locateFile:(file)=>`https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`});
+  hands.setOptions({maxNumHands:1,modelComplexity:1,minDetectionConfidence:.5,minTrackingConfidence:.5});
+  hands.onResults(onResults);
+  cam=new Camera(video,{onFrame:async()=>{if(hands&&video.readyState>=2)await hands.send({image:video})},width:1280,height:720});
+  cam.start();
+ }catch(err){$('camHint').textContent='Kamera tidak dapat dihidupkan: '+(err.message||'Semak kebenaran kamera.');}
+}
+function onResults(results){
+ if(!results.multiHandLandmarks || !results.multiHandLandmarks.length){
+  lastFist=false; fistFrames=0; openFrames=0;
+  if(started && !locked) $('gestureBadge').textContent='✋ Tangan belum dikesan';
+  return;
+ }
+ const lm=results.multiHandLandmarks[0];
+ const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+ // Use the palm centre as reference and compare fingertip-to-palm distance with PIP-to-palm.
+ const palm=lm[9];
+ const tips=[8,12,16,20], pips=[6,10,14,18];
+ let curled=0, extended=0;
+ for(let i=0;i<4;i++){
+  const tipD=dist(lm[tips[i]],palm);
+  const pipD=dist(lm[pips[i]],palm);
+  if(tipD < pipD*1.20) curled++;
+  if(tipD > pipD*1.18) extended++;
+ }
+ const fist=curled>=3;
+ const openHand=extended>=3;
+ const now=Date.now();
+
+ if(handMustOpen){
+  if(openHand){
+   openFrames++;
+   if(openFrames>=1){
+    handMustOpen=false; openFrames=0; fistFrames=0; lastFist=false;
+    $('gestureBadge').textContent='✋ Tangan sedia — kepalkan untuk tumbuk';
+   }
+  } else {
+   openFrames=0;
+   // Avoid a stuck state if tracking drops a frame; after 1 second allow another attempt.
+   if(now-lastPunchAt>1000){handMustOpen=false;fistFrames=0;lastFist=false;}
+  }
+  return;
+ }
+
+ if(fist){
+  fistFrames++;
+  $('gestureBadge').textContent='✊ Kepalan dikesan!';
+ } else {
+  fistFrames=0;
+  $('gestureBadge').textContent='✋ Tangan dikesan — kepalkan untuk tumbuk';
+ }
+
+ // Trigger once after two consecutive fist frames. Do not use !lastFist here:
+ // lastFist can become true on frame one, which previously prevented all punches.
+ if(fistFrames>=2 && now-lastPunchAt>250 && !locked && started){
+  lastPunchAt=now;
+  handMustOpen=true;
+  openFrames=0;
+  const palmX=(lm[0].x+lm[5].x+lm[9].x+lm[13].x+lm[17].x)/5;
+  // Video is mirrored. Convert MediaPipe's camera x coordinate to screen x exactly once.
+  const screenX=1-palmX;
+  choose(screenX<.5?'left':'right');
+ }
+ lastFist=fist;
+}
+$('cameraBtn').addEventListener('click',()=>{if(!cameraReady)startCamera()});
+$('startBtn').addEventListener('click',()=>{$('startScreen').classList.remove('hidden');});
+$('begin').addEventListener('click',async()=>{audio();$('startScreen').classList.add('hidden');$('bottomBar').classList.remove('hidden');started=true;index=0;score=0;locked=false;render();if(!cameraReady)await startCamera();});
+$('soundBtn').addEventListener('click',()=>{soundOn=!soundOn;$('soundBtn').textContent=soundOn?'🔊 Bunyi: ON':'🔇 Bunyi: OFF';if(soundOn)tone(660,.12)});
+$('replay').addEventListener('click',()=>{index=0;score=0;locked=false;started=true;$('endScreen').classList.add('hidden');$('bottomBar').classList.remove('hidden');$('confetti').innerHTML='';render();});
+left.addEventListener('click',()=>choose('left'));right.addEventListener('click',()=>choose('right'));
+// Also provide accessible keyboard controls for testing without a webcam.
+document.addEventListener('keydown',e=>{if(e.key==='ArrowLeft'||e.key.toLowerCase()==='a')choose('left');if(e.key==='ArrowRight'||e.key.toLowerCase()==='d')choose('right')});
+render();
+})();
+</script>
+</body>
+</html>
